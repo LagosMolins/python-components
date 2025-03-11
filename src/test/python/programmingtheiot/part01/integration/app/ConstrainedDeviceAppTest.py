@@ -14,7 +14,7 @@ from programmingtheiot.cda.app.ConstrainedDeviceApp import ConstrainedDeviceApp
 
 class ConstrainedDeviceAppTest(unittest.TestCase):
 	"""
-	This test case class contains very basic unit tests for
+	This test case class contains very basic unit tests for a
 	ConstrainedDeviceApp. It should not be considered complete,
 	but serve as a starting point for the student implementing
 	additional functionality within their Programming the IoT
