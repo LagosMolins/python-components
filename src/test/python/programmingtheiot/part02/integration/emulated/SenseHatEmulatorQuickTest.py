@@ -14,6 +14,7 @@ from time import sleep
 
 from pisense import SenseHAT
 
+
 class SenseHatEmulatorQuickTest(unittest.TestCase):
 	"""
 	This test case class contains very basic unit tests for

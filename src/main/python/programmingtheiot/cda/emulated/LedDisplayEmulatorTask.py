@@ -17,17 +17,54 @@ from programmingtheiot.cda.sim.BaseActuatorSimTask import BaseActuatorSimTask
 from pisense import SenseHAT
 
 class LedDisplayEmulatorTask(BaseActuatorSimTask):
-	"""
-	Shell representation of class for student implementation.
-	
-	"""
+    """
+    Shell representation of class for student implementation.
+    """
 
-	def __init__(self):
-		pass
+    def __init__(self):
+        super( 
+            LedDisplayEmulatorTask, self).__init__( 
+                name = ConfigConst.LED_ACTUATOR_NAME, 
+                typeID = ConfigConst.LED_DISPLAY_ACTUATOR_TYPE, 
+                simpleName = "LED_Display")
 
-	def _activateActuator(self, val: float = ConfigConst.DEFAULT_VAL, stateData: str = None) -> int:
-		pass
+        enableEmulation = ConfigUtil().getBoolean( 
+            ConfigConst.CONSTRAINED_DEVICE, ConfigConst.ENABLE_EMULATOR_KEY)
 
-	def _deactivateActuator(self, val: float = ConfigConst.DEFAULT_VAL, stateData: str = None) -> int:
-		pass
-	
+        self.sh = SenseHAT(emulate=enableEmulation)  # Ahora se inicializa correctamente
+
+    def _activateActuator(self, val: float = ConfigConst.DEFAULT_VAL, stateData: str = None) -> int:
+        simple_name = self.getSimpleName() if self.getSimpleName() is not None else "Unknown"  # Evita errores con None
+        message = stateData if stateData is not None else "No Data"  # Evita errores al concatenar con None
+        
+        if self.sh.screen:
+            self.sh.screen.scroll_text(message, size=8)
+            return 0
+        else:
+            logging.warning(f"{simple_name}: No SenseHAT LED screen instance to write.")
+            return -1
+
+    def _deactivateActuator(self, val: float = ConfigConst.DEFAULT_VAL, stateData: str = None) -> int:
+        simple_name = self.getSimpleName() if self.getSimpleName() is not None else "Unknown"
+
+        if self.sh.screen:
+            self.sh.screen.clear()
+            return 0
+        else:
+            logging.warning(f"{simple_name}: No SenseHAT LED screen instance to clear / close.")
+            return -1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
