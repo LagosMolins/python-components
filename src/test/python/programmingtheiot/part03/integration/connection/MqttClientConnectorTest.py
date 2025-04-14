@@ -44,7 +44,7 @@ class MqttClientConnectorTest(unittest.TestCase):
 
 	def tearDown(self):
 		pass
-
+	
 	@unittest.skip("Ignore for now.")
 	def testConnectAndDisconnect(self):
 		delay = self.cfg.getInteger(ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.KEEP_ALIVE_KEY, ConfigConst.DEFAULT_KEEP_ALIVE)
@@ -54,8 +54,9 @@ class MqttClientConnectorTest(unittest.TestCase):
 		sleep(delay + 5)
 		
 		self.mcc.disconnectClient()
+	
 
-	@unittest.skip("Ignore for now.")
+	#@unittest.skip("Ignore for now.")
 	def testConnectAndCDAManagementStatusPubSub(self):
 		qos = 1
 		delay = self.cfg.getInteger(ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.KEEP_ALIVE_KEY, ConfigConst.DEFAULT_KEEP_ALIVE)
@@ -166,9 +167,11 @@ class MqttClientConnectorTest(unittest.TestCase):
 	@unittest.skip("Ignore for now.")
 	def testCDAManagementStatusPublish(self):
 		"""
+
 		Uncomment this test when integration between the GDA and CDA using MQTT.
 		
 		"""
+
 		qos = 1
 		delay = self.cfg.getInteger(ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.KEEP_ALIVE_KEY, ConfigConst.DEFAULT_KEEP_ALIVE)
 		
@@ -178,6 +181,7 @@ class MqttClientConnectorTest(unittest.TestCase):
 		sleep(delay)
 		
 		self.mcc.disconnectClient()
+	
 
 if __name__ == "__main__":
 	unittest.main()

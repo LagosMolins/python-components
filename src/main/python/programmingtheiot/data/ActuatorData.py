@@ -136,3 +136,4 @@ class ActuatorData(BaseIotData):
         except Exception as e:
             print(f"Error al convertir el objeto a JSON: {e}")
             return None
+        
