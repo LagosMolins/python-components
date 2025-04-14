@@ -29,6 +29,9 @@ import programmingtheiot.common.ConfigConst as ConfigConst
 from programmingtheiot.common.ConfigUtil import ConfigUtil
 from programmingtheiot.data.DataUtil import DataUtil
 
+from programmingtheiot.common import ConfigConst
+
+
 class DeviceDataManager(IDataMessageListener):
 	"""
 	Shell representation of class for student implementation.
@@ -53,8 +56,24 @@ class DeviceDataManager(IDataMessageListener):
 		self.sensorAdapterMgr   = None
 		self.actuatorAdapterMgr = None
 
+		self.actuatorResponseCache = {}
+		self.sensorDataCache = {}
+		self.systemPerfDataCache = {}
+
+
 		# NOTE: The following aren't used until Part III but should be declared now
-		self.mqttClient         = None
+
+		self.enableMqttClient = \
+			self.configUtil.getBoolean( \
+			section = ConfigConst.CONSTRAINED_DEVICE, key = ConfigConst.ENABLE_MQTT_CLIENT_KEY)
+
+		self.mqttClient = None
+
+		if self.enableMqttClient:
+			self.mqttClient = MqttClientConnector()
+			self.mqttClient.setDataMessageListener(self)
+
+		#self.mqttClient         = True
 		self.coapClient         = None
 		self.coapServer         = None
 
@@ -91,7 +110,7 @@ class DeviceDataManager(IDataMessageListener):
 		@param name
 		@return ActuatorData
 		"""
-		pass
+		return self.actuatorResponseCache.get(name, None)
 		
 	def getLatestSensorDataFromCache(self, name: str = None) -> SensorData:
 		"""
@@ -100,7 +119,7 @@ class DeviceDataManager(IDataMessageListener):
 		@param name
 		@return SensorData
 		"""
-		pass
+		return self.sensorDataCache.get(name, None)
 	
 	def getLatestSystemPerformanceDataFromCache(self, name: str = None) -> SystemPerformanceData:
 		"""
@@ -109,7 +128,7 @@ class DeviceDataManager(IDataMessageListener):
 		@param name
 		@return SystemPerformanceData
 		"""
-		pass
+		return self.systemPerfDataCache.get(name, None)
 	
 	def handleActuatorCommandMessage(self, data: ActuatorData = None) -> ActuatorData:
 		logging.info("Actuator data: " + str(data))
@@ -150,11 +169,17 @@ class DeviceDataManager(IDataMessageListener):
 		@param data The incoming JSON message.
 		@return boolean
 		"""
-		pass
+		if resourceEnum == ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE:
+			data = DataUtil().jsonToActuatorData(msg)
+			self.handleActuatorCommandMessage(data)
+			return True
+		return False
 	
 	def handleSensorMessage(self, data: SensorData = None) -> bool:
 		if data:
 			logging.debug("Incoming sensor data received (from sensor manager): " + str(data))
+			self.sensorDataCache[data.getName()] = data
+
 			self._handleSensorDataAnalysis(data)
 			return True
 		else:
@@ -164,6 +189,8 @@ class DeviceDataManager(IDataMessageListener):
 	def handleSystemPerformanceMessage(self, data: SystemPerformanceData = None) -> bool:
 		if data:
 			logging.debug("Incoming system performance message received (from sys perf manager): " + str(data))
+			self.systemPerfDataCache[data.getName()] = data
+
 			return True
 		else:
 			logging.warning("Incoming system performance data is invalid (null). Ignoring.")
@@ -183,7 +210,13 @@ class DeviceDataManager(IDataMessageListener):
 
 		if self.sensorAdapterMgr:
 			self.sensorAdapterMgr.startManager()
-
+		
+		if self.mqttClient:
+			self.mqttClient.connectClient()
+			self.mqttClient.subscribeToTopic(
+				ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE,
+				callback=None,
+				qos=ConfigConst.DEFAULT_QOS)
 		logging.info("Started DeviceDataManager.")
 		
 	def stopManager(self):
@@ -194,6 +227,10 @@ class DeviceDataManager(IDataMessageListener):
 
 		if self.sensorAdapterMgr:
 			self.sensorAdapterMgr.stopManager()
+
+		if self.mqttClient:
+			self.mqttClient.unsubscribeFromTopic(ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE)
+			self.mqttClient.disconnectClient()
 
 		logging.info("Stopped DeviceDataManager.")
 		
@@ -237,4 +274,8 @@ class DeviceDataManager(IDataMessageListener):
 		1) Check connection: Is there a client connection configured (and valid) to a remote MQTT or CoAP server?
 		2) Act on msg: If # 1 is true, send message upstream using one (or both) client connections.
 		"""
-		pass
+		if self.mqttClient:
+			self.mqttClient.publishMessage(resourceName, msg, ConfigConst.DEFAULT_QOS)
+
+		if self.coapClient:
+			self.coapClient.sendPostRequest(resourceName, msg)
