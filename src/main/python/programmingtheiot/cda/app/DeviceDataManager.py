@@ -29,6 +29,9 @@ import programmingtheiot.common.ConfigConst as ConfigConst
 from programmingtheiot.common.ConfigUtil import ConfigUtil
 from programmingtheiot.data.DataUtil import DataUtil
 
+from programmingtheiot.common import ConfigConst
+
+
 class DeviceDataManager(IDataMessageListener):
 	"""
 	Shell representation of class for student implementation.
@@ -64,7 +67,7 @@ class DeviceDataManager(IDataMessageListener):
 			self.configUtil.getBoolean( \
 			section = ConfigConst.CONSTRAINED_DEVICE, key = ConfigConst.ENABLE_MQTT_CLIENT_KEY)
 
-		self.mqttClient = True
+		self.mqttClient = None
 
 		if self.enableMqttClient:
 			self.mqttClient = MqttClientConnector()
@@ -210,8 +213,10 @@ class DeviceDataManager(IDataMessageListener):
 		
 		if self.mqttClient:
 			self.mqttClient.connectClient()
-			self.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE, callback = self.handleIncomingMessage, qos = ConfigConst.DEFAULT_QOS)
-
+			self.mqttClient.subscribeToTopic(
+				ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE,
+				callback=None,
+				qos=ConfigConst.DEFAULT_QOS)
 		logging.info("Started DeviceDataManager.")
 		
 	def stopManager(self):

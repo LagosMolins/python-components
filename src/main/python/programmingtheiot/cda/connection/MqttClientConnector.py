@@ -7,6 +7,7 @@
 # and designed to be modified by the student as needed.
 #
 
+from asyncio import sleep
 import logging
 import paho.mqtt.client as mqttClient
 
@@ -175,7 +176,7 @@ class MqttClientConnector(IPubSubClient):
 			qos = ConfigConst.DEFAULT_QOS
 
 		# publish message, and wait for publish to complete before returning
-		msgInfo = self.mqttClient.publish(topic = resource.value, payload = msg, qos = qos)
+		msgInfo = self.mqttClient.publish(topic=resource, payload=msg, qos=qos)
 		msgInfo.wait_for_publish()
 
 		return True
@@ -191,8 +192,10 @@ class MqttClientConnector(IPubSubClient):
 			qos = ConfigConst.DEFAULT_QOS
 
 		# subscribe to topic
-		logging.info('Subscribing to topic %s', resource.value)
-		self.mqttClient.subscribe(resource.value, qos)
+		topic = resource.value if hasattr(resource, "value") else resource
+		logging.info('Subscribing to topic %s', topic)
+		self.mqttClient.subscribe(topic, qos)
+
 
 		return True
 	
@@ -202,11 +205,15 @@ class MqttClientConnector(IPubSubClient):
 			logging.warning('No topic specified. Cannot unsubscribe.')
 			return False
 
-		logging.info('Unsubscribing to topic %s', resource.value)
-		self.mqttClient.unsubscribe(resource.value)
+		topic = resource.value if hasattr(resource, "value") else resource
+		logging.info('Unsubscribing to topic %s', topic)
+		self.mqttClient.unsubscribe(topic)
+
 
 		return True
 
 	def setDataMessageListener(self, listener: IDataMessageListener = None):
 		if listener:
 			self.dataMsgListener = listener
+
+	
