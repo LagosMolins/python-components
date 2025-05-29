@@ -18,7 +18,7 @@ port           = 1883
 securePort     = 8883
 defaultQoS     = 0
 keepAlive      = 60
-enableAuth     = False
+enableAuth     = True
 enableCrypt    = False
 
 #
