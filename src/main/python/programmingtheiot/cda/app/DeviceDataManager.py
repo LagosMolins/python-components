@@ -320,3 +320,8 @@ class DeviceDataManager(IDataMessageListener):
 				logging.debug("Put incoming message data to resource (CoAP): %s", str(resourceName))
 			else:
 				logging.warning("Failed to put incoming message data to resource (CoAP): %s", str(resourceName))
+
+
+
+
+#esto es una preba para ver si me hace el commit
